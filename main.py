@@ -46,11 +46,16 @@ def login():
                 return redirect(url_for('admin'))
             else:
                 return redirect(url_for('home'))
-            
-
         flash(error)
 
     return render_template('login.html')
+
+@app.route('/admin')
+def admin():
+    products = get_db().execute(
+        'SELECT p.id, label, image, price, description FROM products p'
+    ).fetchall()
+    return render_template('admin.html', products = products)  
 
 @app.route('/home')
 def home():
@@ -92,7 +97,7 @@ def create():
 
     return render_template('admin')
 
-def get_post(id, check_author=True):
+def get_post(id):
     product = get_db().execute(
         'SELECT p.id, label, image, price, description'
         ' FROM products p'
@@ -131,7 +136,7 @@ def update(id):
                 (label, image, price, description, id)
             )
             db.commit()
-            return redirect(url_for('blog.index'))
+            return redirect(url_for('index'))
 
     return render_template('blog/update.html', product=product)
 
