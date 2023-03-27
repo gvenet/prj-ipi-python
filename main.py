@@ -46,23 +46,27 @@ def login():
                 return redirect(url_for('admin'))
             else:
                 return redirect(url_for('home'))
-            
-
         flash(error)
-
     return render_template('login.html')
 
 @app.route('/home')
 def home():
     products = get_db().execute(
-        'SELECT p.id, label, image, price, description FROM products p'
+        'SELECT id, label, image, price, description FROM products'
     ).fetchall()
     return render_template('index.html', products = products)
+
+@app.route('/admin')
+def admin():
+    products = get_db().execute(
+        'SELECT id, label, image, price, description FROM products'
+    ).fetchall()
+    return render_template('admin.html', products = products)
 
 @app.route('/product/<id>')
 def get_product(id):
     product = get_db().execute(
-        'SELECT p.id, label, image, price, description FROM products p WHERE p.id = ?',
+        'SELECT id, label, image, price, description FROM products WHERE id = ?',
         (id)
     ).fetchone()
     return render_template('product.html', product = product)
@@ -74,6 +78,7 @@ def create():
         image = request.form['image']
         price = request.form['price']
         description = request.form['description']
+        print(label, image, price, description)
         error = None
 
         if not label or not image or not price or not description:
@@ -84,34 +89,27 @@ def create():
         else:
             db = get_db()
             db.execute(
-                'INSERT INTO products (label, image, price, description)'
-                ' VALUES (?, ?, ?, ?)',
+                'INSERT INTO products (label, image, price, description) VALUES (?, ?, ?, ?)',
                 (label, image, price, description)
             )
             db.commit()
+    return redirect(url_for('admin'))
 
-    return render_template('admin')
-
-def get_post(id, check_author=True):
+def get_post(id):
     product = get_db().execute(
-        'SELECT p.id, label, image, price, description'
-        ' FROM products p'
-        ' WHERE p.id = ?',
+        'SELECT id, label, image, price, description FROM products WHERE id = ?',
         (id,)
     ).fetchone()
-
     if product is None:
         abort(404, f"Post id {id} doesn't exist.")
-
     # if check_author and post['author_id'] != g.user['id']:
     #     abort(403)
-
     return product
 
 @app.route('/<id>/update', methods=('GET', 'POST'))
 def update(id):
     product = get_post(id)
-
+    print('tu passe la ??',request.method)
     if request.method == 'POST':
         label = request.form['label']
         image = request.form['image']
@@ -131,9 +129,9 @@ def update(id):
                 (label, image, price, description, id)
             )
             db.commit()
-            return redirect(url_for('blog.index'))
 
-    return render_template('blog/update.html', product=product)
+    return redirect(url_for('admin'))
+
 
 @app.route('/<id>/delete', methods=('POST',))
 def delete(id):
