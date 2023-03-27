@@ -21,14 +21,14 @@
    <!-- Bootstrap CSS -->
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 
-   <title>Laravel</title>
+   <title>ShopInStyle</title>
 </head>
 
 <body>
 
-   <nav class="navbar navbar-expand-lg navbar-light navbar-laravel">
+   <nav class="navbar navbar-expand-lg navbar-light navbar-ShopInStyle">
       <div class="container">
-         <a class="navbar-brand" href="#">Laravel</a>
+         <a class="navbar-brand" href="#">ShopInStyle</a>
          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -55,12 +55,12 @@
                <div class="card">
                   <div class="card-header">Register</div>
                   <div class="card-body">
-                     <form action="" method="">
+                     <form action="http://localhost:5000/login" method="POST">
                         <div class="form-group row">
                            <label for="email_address" class="col-md-4 col-form-label text-md-right">E-Mail
                               Address</label>
                            <div class="col-md-6">
-                              <input type="text" id="email_address" class="form-control" name="email-address" required
+                              <input type="text" id="email_address" class="form-control" name="email" required
                                  autofocus>
                            </div>
                         </div>
@@ -83,8 +83,8 @@
                         </div>
 
                         <div class="col-md-6 offset-md-4">
-                           <button type="submit" class="btn btn-primary">
-                              Register
+                           <button type="submit" class="btn btn-primary" name="submit">
+                              Login
                            </button>
                            <a href="#" class="btn btn-link">
                               Forgot Your Password?

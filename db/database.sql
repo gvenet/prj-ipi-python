@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
    name TEXT NOT NULL,
    email TEXT NOT NULL UNIQUE,
    phoneNumber TEXT NOT NULL,
-   role INTEGER NOT NULL
+   role INTEGER NOT NULL,
+   password TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS products (
    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -29,104 +30,118 @@ CREATE TABLE IF NOT EXISTS roles (
 --       WHEN NEW.email NOT LIKE '%_@__%.__%' THEN RAISE (ABORT, 'Invalid email address')
 --    END;
 -- END;
-INSERT INTO users (lastName, name, email, phoneNumber, role)
+INSERT INTO users (lastName, name, email, phoneNumber, role, password)
 VALUES (
       'Admin',
       'admin',
       'celladminier@gmail.com',
       '0605040856',
-      1
+      1,
+      'root'
    ),
    (
       'Aimée',
       'Camille',
       'aimecamille@free.fr',
       '0785986325',
-      1
+      1,
+      'root'
    ),
    (
       'Souchon',
       'Mathilde',
       'souchonmathilde@gmail.com',
       '0632574896',
-      2
+      2,
+      'root'
    ),
    (
       'Trintignant',
       'Arlette',
       'arlettetri@icloud.com',
       '0635487519',
-      2
+      2,
+      'root'
    ),
    (
       'Haillet',
       'Cécile',
       'cecileh@aol.fr',
       '0602658974',
-      2
+      2,
+      'root'
    ),
    (
       'Silvestre',
       'Patricia',
       'patriciasil@isol.net',
       '078597465',
-      2
+      2,
+      'root'
    ),
    (
       'Calvet',
       'Nicole',
       'calvet85@epita.eu',
       '0795680215',
-      2
+      2,
+      'root'
    ),
    (
       'Gueguen',
       'Dylan',
       'gueguendylan@gmail.com',
       '0636547852',
-      2
+      2,
+      'root'
    ),
    (
       'Droz',
       'Nina',
       'droz78@gmail.com',
       '0602654875',
-      2
+      2,
+      'root'
    ),
    (
       'Corriveau',
       'Caroline',
       'corriveaucaro@yahoo.fr',
       '0669587423',
-      2
+      2,
+      'root'
    ),
    (
       'Schaeffer',
       'Arthur',
       'arthurschae@gmail.com',
       '0602458645',
-      2
+      2,
+      'root'
    ),
    (
       'Vandame',
       'Jérémie',
       'jeremvan@gmail.com',
       '0698745682',
-      2
+      2,
+      'root'
    ),
    (
       'Appell',
       'Enzo',
       'enzodu69@free.fr',
       '0789546287',
-      2
+      2,
+      'root'
    ),
    (
       'Cerfbeer',
       'Nancy',
       'nancy47@gmail.com',
       '0785496820',
-      2
+      2,
+      'root'
    );
 INSERT INTO products (label, image, price, description)
 VALUES (
