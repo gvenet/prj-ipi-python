@@ -33,7 +33,7 @@ def home():
     ).fetchall()
     return render_template('index.html', products = products)
 
-@app.route('/product/<int:id>')
+@app.route('/product/<id>')
 def get_product(id):
     product = get_db().execute(
         'SELECT p.id, label, image, price, description FROM products p WHERE p.id = ?',
