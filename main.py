@@ -27,3 +27,4 @@ def hello_world():
 @app.route('/home')
 def home():
     return render_template('index.html')
+
