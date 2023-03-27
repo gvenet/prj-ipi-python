@@ -18,7 +18,7 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-        
+
 
 @app.route("/")
 def hello_world():
@@ -26,4 +26,20 @@ def hello_world():
 
 @app.route('/home')
 def home():
-    return render_template('index.html')
+    products = get_db().execute(
+        'SELECT p.id, label, image, price, description'
+        ' FROM product p '
+        ' WHERE p.id = ?'
+    ).fetchall()
+    return render_template('index.html', products = products)
+
+@app.route('/product')
+def get_product(id):
+    product = get_db().execute(
+        'SELECT p.id, label, image, price, description'
+        ' FROM product p '
+        ' WHERE p.id = ?',
+        (id,)
+    ).fetchone()
+
+    return render_template('product.html', product = product)
