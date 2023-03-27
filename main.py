@@ -59,6 +59,13 @@ def home():
     ).fetchall()
     return render_template('index.html', products = products)
 
+@app.route('/admin')
+def admin():
+    products = get_db().execute(
+        'SELECT p.id, label, image, price, description FROM products p'
+    ).fetchall()
+    return render_template('admin.html', products = products)
+
 @app.route('/product/<id>')
 def get_product(id):
     product = get_db().execute(
@@ -92,7 +99,7 @@ def create():
 
     return render_template('admin')
 
-def get_post(id, check_author=True):
+def get_post(id):
     product = get_db().execute(
         'SELECT p.id, label, image, price, description'
         ' FROM products p'
