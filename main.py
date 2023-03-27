@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
 import sqlite3
 from flask import g
 from pathlib import Path
@@ -7,6 +7,8 @@ app = Flask(__name__)
 
 DATABASE = 'database.db'
 SQL_SCRIPT = 'db/database.sql'
+
+app.secret_key = 'fed8e6793a470fd16956e29d57a229ea616f482679ea552f3cda7b7677dcfd3e'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -39,8 +41,8 @@ def login():
 
         if error is None:
             session.clear()
-            session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            session['user_id'] = user[0]
+            return redirect(url_for('home'))
 
         flash(error)
 
@@ -60,6 +62,82 @@ def get_product(id):
         (id)
     ).fetchone()
     return render_template('product.html', product = product)
+
+@app.route('/create', methods=('GET', 'POST'))
+def create():
+    if request.method == 'POST':
+        label = request.form['label']
+        image = request.form['image']
+        price = request.form['price']
+        description = request.form['description']
+        error = None
+
+        if not label or not image or not price or not description:
+            error = 'A field is empty'
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            db.execute(
+                'INSERT INTO products (label, image, price, description)'
+                ' VALUES (?, ?, ?, ?)',
+                (label, image, price, description)
+            )
+            db.commit()
+
+    return render_template('admin')
+
+def get_post(id, check_author=True):
+    product = get_db().execute(
+        'SELECT p.id, label, image, price, description'
+        ' FROM products p'
+        ' WHERE p.id = ?',
+        (id,)
+    ).fetchone()
+
+    if product is None:
+        abort(404, f"Post id {id} doesn't exist.")
+
+    # if check_author and post['author_id'] != g.user['id']:
+    #     abort(403)
+
+    return product
+
+@app.route('/<id>/update', methods=('GET', 'POST'))
+def update(id):
+    product = get_post(id)
+
+    if request.method == 'POST':
+        label = request.form['label']
+        image = request.form['image']
+        price = request.form['price']
+        description = request.form['description']
+        error = None
+
+        if not label or not image or not price or not description:
+            error = 'A field is empty'
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            db.execute(
+                'UPDATE products SET label = ?, image = ?, price = ?, description = ? WHERE id = ?',
+                (label, image, price, description, id)
+            )
+            db.commit()
+            return redirect(url_for('blog.index'))
+
+    return render_template('blog/update.html', product=product)
+
+@app.route('/<id>/delete', methods=('POST',))
+def delete(id):
+    get_post(id)
+    db = get_db()
+    db.execute('DELETE FROM products WHERE id = ?', (id,))
+    db.commit()
+    return redirect(url_for('admin'))
 
 def db_init():
     if not Path(DATABASE).exists():
