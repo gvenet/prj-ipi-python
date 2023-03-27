@@ -22,13 +22,11 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-@app.route("/")
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        print('POST',email,password)
         db = get_db()
         error = None
         user = db.execute(
@@ -49,6 +47,7 @@ def login():
         flash(error)
     return render_template('login.html')
 
+@app.route("/")
 @app.route('/home')
 def home():
     products = get_db().execute(
@@ -78,7 +77,6 @@ def create():
         image = request.form['image']
         price = request.form['price']
         description = request.form['description']
-        print(label, image, price, description)
         error = None
 
         if not label or not image or not price or not description:
@@ -109,7 +107,6 @@ def get_post(id):
 @app.route('/<id>/update', methods=('GET', 'POST'))
 def update(id):
     product = get_post(id)
-    print('tu passe la ??',request.method)
     if request.method == 'POST':
         label = request.form['label']
         image = request.form['image']
@@ -143,7 +140,6 @@ def delete(id):
 
 def db_init():
     if not Path(DATABASE).exists():
-        print('create db')
         with open(SQL_SCRIPT, 'r') as sql_file:
             sql_script = sql_file.read()
 
