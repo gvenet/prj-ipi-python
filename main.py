@@ -42,7 +42,11 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user[0]
-            return redirect(url_for('home'))
+            if user[5] == 1:
+                return redirect(url_for('admin'))
+            else:
+                return redirect(url_for('home'))
+            
 
         flash(error)
 
