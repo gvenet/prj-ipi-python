@@ -45,6 +45,8 @@ def get_product(id):
         ' WHERE p.id = ?',
         (id,)
     ).fetchone()
+    return render_template('product.html', product = product)
+
 def main():
     if not Path(DATABASE).exists():
         print('create db')
@@ -57,5 +59,4 @@ def main():
         db.commit()
         db.close()
 
-    return render_template('product.html', product = product)
 main()
