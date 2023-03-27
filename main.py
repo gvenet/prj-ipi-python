@@ -50,13 +50,6 @@ def login():
 
     return render_template('login.html')
 
-@app.route('/admin')
-def admin():
-    products = get_db().execute(
-        'SELECT p.id, label, image, price, description FROM products p'
-    ).fetchall()
-    return render_template('admin.html', products = products)  
-
 @app.route('/home')
 def home():
     products = get_db().execute(
