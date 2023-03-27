@@ -20,6 +20,8 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+        
+
 @app.route("/")
 @app.route("/login")
 def index():
@@ -28,8 +30,21 @@ def index():
 
 @app.route('/home')
 def home():
-    return render_template('index.html')
+    products = get_db().execute(
+        'SELECT p.id, label, image, price, description'
+        ' FROM product p '
+        ' WHERE p.id = ?'
+    ).fetchall()
+    return render_template('index.html', products = products)
 
+@app.route('/product')
+def get_product(id):
+    product = get_db().execute(
+        'SELECT p.id, label, image, price, description'
+        ' FROM product p '
+        ' WHERE p.id = ?',
+        (id,)
+    ).fetchone()
 def main():
     if not Path(DATABASE).exists():
         print('create db')
@@ -42,4 +57,5 @@ def main():
         db.commit()
         db.close()
 
+    return render_template('product.html', product = product)
 main()
