@@ -61,12 +61,16 @@ def register():
         last_name = request.form['last-name']
         phone_number = request.form['phone-number']
         password = request.form['password']
+        valid_password = request.form['password-verif']
         hashed_pwd = hash_pwd(password)
         logUser.is_admin = True if request.form.get('admin_checkbox') else False
         error = None
 
         if not email or not first_name or not last_name or not phone_number or not password:
             error = "a field is missing"
+
+        if password != valid_password:
+            error = "Passwords are not matching"
 
         if error is not None:
             flash(error, 'error')

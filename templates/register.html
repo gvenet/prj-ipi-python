@@ -97,7 +97,7 @@
                             <div class="form-group row">
                                 <label for="password" class="col-md-4 col-form-label text-md-right">Password</label>
                                 <div class="col-md-6">
-                                    <input type="password" id="password" class="form-control" name="password" required>
+                                    <input type="password" id="password" class="form-control" name="password" required onkeyup="validate_password()">
                                 </div>
                             </div>
 
@@ -106,7 +106,7 @@
                                     Password</label>
                                 <div class="col-md-6">
                                     <input type="password" id="password-verif" class="form-control"
-                                           name="password-verif" required>
+                                           name="password-verif" required onkeyup="validate_password()">
                                 </div>
                             </div>
 
@@ -118,13 +118,19 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <div class="col-md-6 offset-md-4">
+                                    <span id="wrong_pass_alert"></span>
+                                </div>
+                            </div>
 
                             <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary" name="submit">
+                                <button type="submit" id="create" class="btn btn-primary" name="submit"
+                                        onclick="wrong_pass_alert()">
                                     Register
                                 </button>
                             </div>
-                            *
+
                         </form>
                     </div>
                 </div>
@@ -133,5 +139,33 @@
     </div>
 </main>
 </body>
+<script>
+    function validate_password() {
 
+        const pass = document.getElementById('password').value;
+        const confirm_pass = document.getElementById('password-verif').value;
+        if (pass !== confirm_pass) {
+            document.getElementById('wrong_pass_alert').style.color = 'red';
+            document.getElementById('wrong_pass_alert').innerHTML
+                = '☒ Use same password';
+            document.getElementById('create').disabled = true;
+            document.getElementById('create').style.opacity = (0.4);
+        } else {
+            document.getElementById('wrong_pass_alert').style.color = 'green';
+            document.getElementById('wrong_pass_alert').innerHTML =
+                '🗹 Password Matched';
+            document.getElementById('create').disabled = false;
+            document.getElementById('create').style.opacity = (1);
+        }
+    }
+
+    function wrong_pass_alert() {
+        if (document.getElementById('pass').value !== "" &&
+            document.getElementById('confirm_pass').value !== "") {
+            alert("Your response is submitted");
+        } else {
+            alert("Please fill all the fields");
+        }
+    }
+</script>
 </html>
