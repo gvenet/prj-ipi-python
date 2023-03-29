@@ -116,7 +116,7 @@ def login():
         flash(error)
 
         print(error)
-    return render_template('login.html')
+    return render_template('login.html', is_connected = logUser.is_connected)
 
 @app.route("/disconnect")
 def disconnect():
@@ -134,7 +134,7 @@ def home():
     products = get_db().execute(
         'SELECT id, label, image, price, description FROM products'
     ).fetchall()
-    return render_template('index.html', products = products)
+    return render_template('index.html', products = products, is_admin = logUser.is_admin)
 
 @app.route('/admin')
 def admin():
@@ -142,7 +142,7 @@ def admin():
         products = get_db().execute(
             'SELECT id, label, image, price, description FROM products'
         ).fetchall()
-        return render_template('admin.html', products = products)
+        return render_template('admin.html', products = products, is_admin = logUser.is_admin)
     else: return redirect(url_for('home'))
 
 @app.route('/product/<id>')
