@@ -1,10 +1,15 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 import sqlite3
 from flask import g
 from pathlib import Path
 import bcrypt
 
 app = Flask(__name__)
+
+##################################################################################################
+#                                 GLOBALS                                                        #
+##################################################################################################
+
 DATABASE = 'database.db'
 SQL_SCRIPT = 'db/database.sql'
 
@@ -17,11 +22,14 @@ class LogUser:
 
 logUser = LogUser(False, False)
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
+##################################################################################################
+#                                 UTILS                                                          #
+##################################################################################################
+
+@app.errorhandler(500)
+@app.errorhandler(404)
+def errorpath(e):
+    return redirect(url_for('home'))
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -29,6 +37,21 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+def hash_pwd(pwd):
+    salt = bcrypt.gensalt()
+    pwd = pwd.encode('utf-8')
+    hashed_pwd = bcrypt.hashpw(pwd, salt)
+    return hashed_pwd
+
+##################################################################################################
+#                                 ROUTES                                                         #
+##################################################################################################
 
 @app.route('/register', methods=('GET', 'POST'))
 def register():
@@ -39,43 +62,28 @@ def register():
         phone_number = request.form['phone-number']
         password = request.form['password']
         hashed_pwd = hash_pwd(password)
-
-        try:
-            role = request.form['admin']
-        except:
-            role = 'off'
-
-        if role == 'on':
-            role = 1
-        elif role == 'off':
-            role = 2
+        logUser.is_admin = True if request.form.get('admin_checkbox') else False
         error = None
 
         if not email or not first_name or not last_name or not phone_number or not password:
             error = "a field is missing"
 
         if error is not None:
-            flash(error)
+            flash(error, 'error')
         else:
             db = get_db()
             try:
                 db.execute(
                     'INSERT INTO users (lastName, name, email, phoneNumber, role, password) VALUES (?, ?, ?, ?, ?, ?)',
-                    (last_name, first_name, email, phone_number, role, hashed_pwd)
+                    (last_name, first_name, email, phone_number, logUser.is_admin, hashed_pwd)
                 )
                 db.commit()
                 logUser.is_connected = True
-                if role == 1:
-                    logUser.is_admin = True
-                elif role == 2:
-                    logUser.is_admin = False
                 return redirect(url_for('home'))
             except:
                 print('exception occured, user already existed')
-                return render_template('register.html')
 
-    elif request.method == "GET":
-        return render_template('register.html')
+    return render_template('register.html')
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
@@ -88,34 +96,24 @@ def login():
             'SELECT * FROM users WHERE email = (?)', (email,)
         ).fetchone()
 
-        try:
-            is_pwd_good = bcrypt.checkpw(password.encode('utf-8'), user[6])
-        except:
-            if password == user[6]:
-                is_pwd_good = True
-            else:
-                is_pwd_good = False
-
-        if user is None:
-            error = 'Incorrect email.'
-
-        elif not is_pwd_good:
+        if user and not bcrypt.checkpw(password.encode('utf-8'), user[6]):
             error = 'Incorrect password.'
+        if not user:
+            error = 'Incorrect email.'
 
         if error is None:
             session.clear()
             session['user_id'] = user[0]
             if user[5] == 1:
-                logUser.is_admin = True
                 logUser.is_connected = True
+                logUser.is_admin = True
                 return redirect(url_for('admin'))
             else:
                 logUser.is_connected = True
                 logUser.is_admin = False
                 return redirect(url_for('home'))
-        flash(error)
+        flash(error, 'error')
 
-        print(error)
     return render_template('login.html', is_connected = logUser.is_connected)
 
 @app.route("/disconnect")
@@ -124,16 +122,10 @@ def disconnect():
     logUser.is_connected = False
     return redirect(url_for('login'))
 
-@app.errorhandler(500)
-@app.errorhandler(404)
-def errorpath(e):
-    return redirect(url_for('home'))
-
-
 @app.route("/")
 @app.route('/home')
 def home():
-    print(logUser)
+    # print(logUser)
     if logUser.is_connected is False:
         return redirect(url_for('login'))
 
@@ -149,7 +141,7 @@ def admin():
             'SELECT id, label, image, price, description FROM products'
         ).fetchall()
         return render_template('admin.html', products = products, is_admin = logUser.is_admin)
-    else: return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 @app.route('/product/<id>')
 def get_product(id):
@@ -158,10 +150,13 @@ def get_product(id):
             'SELECT id, label, image, price, description FROM products WHERE id = ?',
             (id)
         ).fetchone()
-        print(product)
-        return render_template('product.html', product=product, productFound = True)
+        return render_template('product.html', product=product, productFound = True, is_admin = logUser.is_admin)
     except:
         return render_template('product.html', product = [0, 'product not found', '', 0, ''], productFound = False)
+
+##################################################################################################
+#                                 CRUD                                                           #
+##################################################################################################
 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
@@ -176,7 +171,7 @@ def create():
             error = 'A field is empty'
 
         if error is not None:
-            flash(error)
+            flash(error, 'error')
         else:
             db = get_db()
             db.execute(
@@ -186,20 +181,8 @@ def create():
             db.commit()
     return redirect(url_for('admin'))
 
-def get_post(id):
-    product = get_db().execute(
-        'SELECT id, label, image, price, description FROM products WHERE id = ?',
-        (id,)
-    ).fetchone()
-    if product is None:
-        abort(404, f"Post id {id} doesn't exist.")
-    # if check_author and post['author_id'] != g.user['id']:
-    #     abort(403)
-    return product
-
 @app.route('/<id>/update', methods=('GET', 'POST'))
 def update(id):
-    product = get_post(id)
     if request.method == 'POST':
         label = request.form['label']
         image = request.form['image']
@@ -211,7 +194,7 @@ def update(id):
             error = 'A field is empty'
 
         if error is not None:
-            flash(error)
+            flash(error, 'error')
         else:
             db = get_db()
             db.execute(
@@ -222,28 +205,24 @@ def update(id):
 
     return redirect(url_for('admin'))
 
-def hash_pwd(pwd):
-    salt = bcrypt.gensalt()
-    pwd = pwd.encode('utf-8')
-    hashed_pwd = bcrypt.hashpw(pwd, salt)
-    return hashed_pwd
+
 
 @app.route('/<id>/delete', methods=('POST',))
 def delete(id):
-    get_post(id)
     db = get_db()
     db.execute('DELETE FROM products WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('admin'))
 
+##################################################################################################
+#                                 DB INIT                                                        #
+##################################################################################################
+
 def db_init():
     if not Path(DATABASE).exists():
-        with open(SQL_SCRIPT, 'r') as sql_file:
-            sql_script = sql_file.read()
-
+        sql_script = Path(SQL_SCRIPT).read_text()
         db = sqlite3.connect(DATABASE)
-        cursor = db.cursor()
-        cursor.executescript(sql_script)
+        db.cursor().executescript(sql_script)
         db.commit()
         db.close()
 

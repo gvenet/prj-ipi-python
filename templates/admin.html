@@ -326,7 +326,6 @@
                 $('#editLabel').val(productName);
                 $('#editDescription').val(productDescription);
                 $('#editImage').val(productImage);
-                console.log(productImage)
                 $('#editPrice').val(productPrice);
 
                 $('#editEmployeeModal form:first-child').attr('action', 'http://localhost:5000/' + productId + '/update');
@@ -348,7 +347,7 @@
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container px-4 px-lg-5">
-        <a class="navbar-brand" href="#!">Clothes</a>
+        <a class="navbar-brand" href="{{url_for('home')}}">Clothes</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span
                 class="navbar-toggler-icon"></span></button>
@@ -361,18 +360,6 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{url_for('disconnect')}}">Disconnect</a>
                 </li>
-                <!-- <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#!">All Products</a></li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li><a class="dropdown-item" href="#!">Popular Items</a></li>
-                        <li><a class="dropdown-item" href="#!">New Arrivals</a></li>
-                    </ul>
-                </li> -->
             </ul>
             <div class="d-flex ">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
@@ -385,15 +372,6 @@
                         <i class="nav-link">logged as user</i>
                     </li>
                     {% endif %}
-                    <li>
-                        <form class="d-flex">
-                            <button class="btn btn-outline-dark" type="submit">
-                                <i class="bi-cart-fill me-1"></i>
-                                Cart
-                                <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                            </button>
-                        </form>
-                    </li>
                 </ul>
             </div>
         </div>
