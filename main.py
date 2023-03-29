@@ -5,11 +5,17 @@ from pathlib import Path
 import bcrypt
 
 app = Flask(__name__)
-
 DATABASE = 'database.db'
 SQL_SCRIPT = 'db/database.sql'
 
 app.secret_key = 'fed8e6793a470fd16956e29d57a229ea616f482679ea552f3cda7b7677dcfd3e'
+
+class LogUser:
+  def __init__(self, is_connected, is_admin):
+    self.is_connected = is_connected
+    self.is_admin = is_admin
+
+user = LogUser(False, False)
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -75,7 +81,7 @@ def login():
         user = db.execute(
             'SELECT * FROM users WHERE email = (?)', (email,)
         ).fetchone()
-        is_pwd_good = False
+
         try:
             is_pwd_good = bcrypt.checkpw(password.encode('utf-8'), user[6])
         except:
@@ -105,6 +111,9 @@ def login():
 @app.route("/")
 @app.route('/home')
 def home():
+    if LOG_USER is None:
+        return redirect(url_for('login'))
+
     products = get_db().execute(
         'SELECT id, label, image, price, description FROM products'
     ).fetchall()
