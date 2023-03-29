@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 import sqlite3
 from flask import g
 from pathlib import Path
+import bcrypt
 
 app = Flask(__name__)
 
@@ -22,6 +23,47 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+
+@app.route('/register', methods=('GET', 'POST'))
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        first_name = request.form['first-name']
+        last_name = request.form['last-name']
+        phone_number = request.form['phone-number']
+        password = request.form['password']
+        hashed_pwd = hash_pwd(password)
+
+        try:
+            role = request.form['admin']
+        except:
+            role = 'off'
+
+        if role == 'on':
+            role = 1
+        elif role == 'off':
+            role = 2
+        error = None
+
+        if not email or not first_name or not last_name or not phone_number or not password:
+            error = "a field is missing"
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            try:
+                db.execute(
+                    'INSERT INTO users (lastName, name, email, phoneNumber, role, password) VALUES (?, ?, ?, ?, ?, ?)',
+                    (last_name, first_name, email, phone_number, role, hashed_pwd)
+                )
+                db.commit()
+            except:
+                print('exception occured, user already existed')
+                return render_template('register.html')
+
+    return render_template('login.html')
+
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -32,9 +74,19 @@ def login():
         user = db.execute(
             'SELECT * FROM users WHERE email = (?)', (email,)
         ).fetchone()
+        is_pwd_good = False
+        try:
+            is_pwd_good = bcrypt.checkpw(password.encode('utf-8'), user[6])
+        except:
+            if password == user[6]:
+                is_pwd_good = True
+            else:
+                is_pwd_good = False
+
         if user is None:
             error = 'Incorrect email.'
-        elif user[6] != password:
+
+        elif not is_pwd_good:
             error = 'Incorrect password.'
 
         if error is None:
@@ -45,6 +97,8 @@ def login():
             else:
                 return redirect(url_for('home'))
         flash(error)
+
+        print(error)
     return render_template('login.html')
 
 @app.route("/")
@@ -129,6 +183,11 @@ def update(id):
 
     return redirect(url_for('admin'))
 
+def hash_pwd(pwd):
+    salt = bcrypt.gensalt()
+    pwd = pwd.encode('utf-8')
+    hashed_pwd = bcrypt.hashpw(pwd, salt)
+    return hashed_pwd
 
 @app.route('/<id>/delete', methods=('POST',))
 def delete(id):
