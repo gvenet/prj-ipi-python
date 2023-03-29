@@ -29,21 +29,12 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{url_for('disconnect')}}">Disconnect</a>
                 </li>
-                <!-- <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{{url_for('home')}}">All Products</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="#!">Popular Items</a></li>
-                        <li><a class="dropdown-item" href="#!">New Arrivals</a></li>
-                    </ul>
-                </li> -->
             </ul>
             <div class="d-flex ">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                    {% if is_admin  %}
+                    {% if is_admin %}
                     <li class="nav-item">
-                        <i class="nav-link" >logged as admin</i>
+                        <i class="nav-link">logged as admin</i>
                     </li>
                     {% else %}
                     <li class="nav-item">
@@ -68,10 +59,15 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 my-5">
         <div class="row gx-4 gx-lg-5 align-items-center">
+            {% if productFound %}
             <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{{ product[2] }}" alt="..."/></div>
+            {% endif %}
             <div class="col-md-6">
+                {% if productFound %}
                 <div class="small mb-1">SKU: BST-498</div>
+                {% endif %}
                 <h1 class="display-5 fw-bolder">{{ product[1] }}</h1>
+                {% if productFound %}
                 <div class="fs-5 mb-5">
                     <span>{{ product[3] }}</span>
                 </div>
@@ -84,6 +80,7 @@
                         Add to cart
                     </button>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

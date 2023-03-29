@@ -124,6 +124,12 @@ def disconnect():
     logUser.is_connected = False
     return redirect(url_for('login'))
 
+@app.errorhandler(500)
+@app.errorhandler(404)
+def errorpath(e):
+    return redirect(url_for('home'))
+
+
 @app.route("/")
 @app.route('/home')
 def home():
@@ -147,11 +153,15 @@ def admin():
 
 @app.route('/product/<id>')
 def get_product(id):
-    product = get_db().execute(
-        'SELECT id, label, image, price, description FROM products WHERE id = ?',
-        (id)
-    ).fetchone()
-    return render_template('product.html', product = product)
+    try:
+        product = get_db().execute(
+            'SELECT id, label, image, price, description FROM products WHERE id = ?',
+            (id)
+        ).fetchone()
+        print(product)
+        return render_template('product.html', product=product, productFound = True)
+    except:
+        return render_template('product.html', product = [0, 'product not found', '', 0, ''], productFound = False)
 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
