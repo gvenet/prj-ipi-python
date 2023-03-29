@@ -5,11 +5,17 @@ from pathlib import Path
 import bcrypt
 
 app = Flask(__name__)
-
 DATABASE = 'database.db'
 SQL_SCRIPT = 'db/database.sql'
 
 app.secret_key = 'fed8e6793a470fd16956e29d57a229ea616f482679ea552f3cda7b7677dcfd3e'
+
+class LogUser:
+  def __init__(self, is_connected, is_admin):
+    self.is_connected = is_connected
+    self.is_admin = is_admin
+
+logUser = LogUser(False, False)
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -58,10 +64,16 @@ def register():
                     (last_name, first_name, email, phone_number, role, hashed_pwd)
                 )
                 db.commit()
-                return render_template('register.html')
+                logUser.is_connected = True
+                if role == 1:
+                    logUser.is_admin = True
+                elif role == 2:
+                    logUser.is_admin = False
+                return redirect(url_for('home'))
             except:
                 print('exception occured, user already existed')
-                return redirect(url_for('home'))
+                return render_template('register.html')
+
     elif request.method == "GET":
         return render_template('register.html')
 
@@ -75,7 +87,7 @@ def login():
         user = db.execute(
             'SELECT * FROM users WHERE email = (?)', (email,)
         ).fetchone()
-        is_pwd_good = False
+
         try:
             is_pwd_good = bcrypt.checkpw(password.encode('utf-8'), user[6])
         except:
@@ -94,17 +106,31 @@ def login():
             session.clear()
             session['user_id'] = user[0]
             if user[5] == 1:
+                logUser.is_admin = True
+                logUser.is_connected = True
                 return redirect(url_for('admin'))
             else:
+                logUser.is_connected = True
+                logUser.is_admin = False
                 return redirect(url_for('home'))
         flash(error)
 
         print(error)
     return render_template('login.html')
 
+@app.route("/disconnect")
+def disconnect():
+    logUser.is_admin = False
+    logUser.is_connected = False
+    return redirect(url_for('login'))
+
 @app.route("/")
 @app.route('/home')
 def home():
+    print(logUser)
+    if logUser.is_connected is False:
+        return redirect(url_for('login'))
+
     products = get_db().execute(
         'SELECT id, label, image, price, description FROM products'
     ).fetchall()
@@ -112,10 +138,12 @@ def home():
 
 @app.route('/admin')
 def admin():
-    products = get_db().execute(
-        'SELECT id, label, image, price, description FROM products'
-    ).fetchall()
-    return render_template('admin.html', products = products)
+    if logUser.is_admin is True:
+        products = get_db().execute(
+            'SELECT id, label, image, price, description FROM products'
+        ).fetchall()
+        return render_template('admin.html', products = products)
+    else: return redirect(url_for('home'))
 
 @app.route('/product/<id>')
 def get_product(id):
