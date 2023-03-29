@@ -58,11 +58,12 @@ def register():
                     (last_name, first_name, email, phone_number, role, hashed_pwd)
                 )
                 db.commit()
+                return render_template('register.html')
             except:
                 print('exception occured, user already existed')
-                return render_template('register.html')
-
-    return render_template('login.html')
+                return redirect(url_for('home'))
+    elif request.method == "GET":
+        return render_template('register.html')
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
