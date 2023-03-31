@@ -163,7 +163,7 @@ def disconnect():
     return redirect(url_for("login"))
 
 
-# displays the home page with a list of products
+# The / route and the /home route displays the home page with a list of products
 @app.route("/")
 @app.route("/home")
 def home():
